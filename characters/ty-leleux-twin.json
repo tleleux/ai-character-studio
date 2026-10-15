@@ -1,0 +1,113 @@
+{
+ "id": "ty-leleux-twin",
+ "bundled": true,
+ "name": "Ty LeLeux",
+ "variant": "Digital twin · podcast studio · reel 001",
+ "archetype": "the founder who builds it in public",
+ "track": "twin",
+ "created": "2026-10-15",
+ "updated": "2026-10-15",
+ "fields": {
+  "brief": "My digital twin. Short clips on building companies with AI agents, what the data actually says, and research-peptide education for the audience of the stores I run. Calm, direct, no hype. Instagram first.",
+  "platform": "Instagram Reels",
+  "name": "Ty LeLeux",
+  "voicemode": "clone my voice from a memo",
+  "setting": "podcast studio, seated at a dark wood desk, a broadcast dynamic microphone on a boom arm from camera left, over-ear headphones around the neck, two acoustic panels and a warm practical lamp behind, a water glass on the desk, single fixed camera, medium shot, no interviewer in frame",
+  "light": "soft key light from camera right",
+  "wardA": "plain white cotton hoodie, hood down, thin gold chain at the collar",
+  "wardB": "black crewneck tee, gold chain",
+  "mark": "full reddish-brown beard, short dark hair with a sharp fade, light eyes, thin gold chain, steel watch on the left wrist",
+  "persona": "direct, calm, explains the mechanism once and moves on; shows the number before the opinion",
+  "pillars": "1 what I built this week with AI agents (process, numbers) · 2 what the data says vs what the feed says · 3 research-peptide literacy: certificates, purity, what \"research grade\" means · 4 one tool, one use, 15 seconds · 5 running a company from a Discord thread",
+  "first": "Everything you just saw was built by two AI agents talking to each other in a Discord thread.",
+  "consent": "I am the person in the photos and I consent",
+  "memo": "existing ElevenLabs professional clone \"Ty Professional Voice\" (FxNwkff13TH7yNXgzY5t) — no new memo needed",
+  "photoNames": [
+   "car_45.jpg",
+   "car_120.jpg",
+   "car_135.jpg",
+   "car_165.jpg",
+   "car_30.jpg",
+   "car_60.jpg",
+   "car_105.jpg",
+   "car_150.jpg",
+   "car_180.jpg",
+   "car_195.jpg",
+   "bal_0.jpg",
+   "bal_120.jpg",
+   "bal_30.jpg",
+   "bal_15.jpg"
+  ]
+ },
+ "checks": {
+  "q1": "Proof of the studio: the founder's own twin posting about the machine that made it. Education and demos for TTG's audience; the stores live one hop away.",
+  "q2": "To show the number before the opinion.",
+  "q3": "Hype. Dose. Sell a compound. Pretend the agents are magic.",
+  "q4": "Talks fast when he's excited; corrects himself mid-sentence; checks the chat instead of the camera.",
+  "q5": "Short fade, full beard, white hoodie, headphones around the neck.",
+  "q6": "A builder who automates everything and still watches every render once.",
+  "q7": "A podcast studio desk: boom mic from the left, headphones around the neck, acoustic panels and a warm lamp behind, mid-conversation, no interviewer in frame.",
+  "q8": "Short declaratives. Numbers first. Half a beat before the punchline.",
+  "q9": "direct, calm, explains the mechanism once and moves on; shows the number before the opinion"
+ },
+ "performance": {
+  "archetype": "practitioner",
+  "wpm": "195–205 WPM (measured: clip 1 201, clip 2 170)",
+  "pauses": "12 per min, median 0.38 s, none ≥ 0.7 s",
+  "pitch": "≈ 12 semitones",
+  "brow": "low",
+  "glances": "≈ 39 per min",
+  "hands": "80% in frame",
+  "cuts": "every 5–6 s",
+  "voice": "direct, calm, warm — own voice, ElevenLabs clone FxNwkff13TH7yNXgzY5t"
+ },
+ "outputs": {
+  "plate": {
+   "picked": "real frame, no plate render",
+   "candidates": "14 face-visible frames pulled from your own talking-head videos (car selfie, balcony) in the TYLER CONTENT Drive folder; the straight-on car frame is the reference",
+   "date": "2026-10-15"
+  },
+  "trainingSet": "14 real frames (10 car, 4 balcony), uploaded as photos; no profiles, no full body",
+  "soul": {
+   "id": "80d11dfb-2390-4b1f-9cbb-4c096c077bd9",
+   "status": "training (queued at Higgsfield during the build; the reel used the real-frame reference instead)",
+   "trainedOn": "14 real frames of you"
+  },
+  "sheet": {
+   "full": "assets/ty-sheet.jpg",
+   "page1": "assets/ty-page1.jpg",
+   "page2": "assets/ty-page2.jpg",
+   "face": "assets/ty-face.jpg",
+   "perf": "assets/ty-perf.jpg",
+   "renders": "hybrid: GPT Image 2.5 ×2 with your real frame as the face reference, 5.5 credits"
+  },
+  "voice": {
+   "id": "FxNwkff13TH7yNXgzY5t",
+   "engine": "ElevenLabs professional clone, already in your account",
+   "f0": "speed 1.2, stability 0.4"
+  },
+  "credits": "Soul ≈ 26 + start frames 4 + sheet 5.5 + clips 55 × 2 rounds ≈ 146 Higgsfield credits; voice on ElevenLabs characters",
+  "reel": {
+   "name": "Reel 001 · Built by two agents (the studio itself)",
+   "file": "assets/reel-ty-001.mp4",
+   "duration": "23 s, two clips",
+   "route": "your real frames as the reference → podcast start frame in a white hoodie → your ElevenLabs clone measured at 209 / 211 WPM before render → two Wan 2.7 clips → room-tone and level pass → captions → gate",
+   "score": {
+    "overall": 83,
+    "pass": true,
+    "dims": {
+     "edit rhythm": 86,
+     "motion": 84,
+     "face": 76,
+     "voice prosody": 85,
+     "script": 95,
+     "voice quality": 70
+    }
+   },
+   "measured": "209 and 211 WPM · 3 and 2 pauses per clip, median 0.47 s · speech −23 dBFS after the level pass · room tone −54 dBFS low-passed",
+   "script": "Clip 1: Everything you just saw was built by two AI agents talking to each other in a Discord thread, one runs my company's operations and the other writes the code, so I type one paragraph and a character exists by lunch.  Clip 2: The part nobody expects is that she gets graded, three hundred twenty-two real creator reels measured frame by frame, and under seventy it never posts, which is the whole difference between an avatar and a person.",
+   "openFixes": "brow furrow sits at 0.67 (human ≤ 0.15) and brow raises do not land on the emphasised words; eyes closed slightly too long on the glances down; one uncut 23 s shot; round 1 failed on pauses (28 per minute) and was fixed by flowing sentences and steadier voice settings"
+  }
+ },
+ "thumb": "assets/ty-face.jpg"
+}

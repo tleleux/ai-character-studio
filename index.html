@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AI Character Studio</title>
+<meta name="description" content="Guided builder for an AI influencer or a digital twin: answer the steps, get a continuity card, a build pack, and a reel.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#070a0f;--bg2:#0d1219;--fg:#e8edf2;--mute:#8a96a3;--line:#1e2833;--card:#0f161f;--acc:#38e8d0;--acc2:#8b7cff;--warn:#ff7a59;--ok:#5be39a;--glow:0 0 0 1px rgba(56,232,208,.35),0 0 28px rgba(56,232,208,.14);--mono:'JetBrains Mono',ui-monospace,Menlo,monospace;color-scheme:dark}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f3f6f8;--bg2:#e9eef2;--fg:#0d141b;--mute:#52606d;--line:#d3dbe2;--card:#ffffff;--acc:#0f8f7f;--acc2:#5b48e0;--warn:#c2410c;--ok:#15803d;--glow:0 0 0 1px rgba(15,143,127,.35),0 0 20px rgba(15,143,127,.12);color-scheme:light}}
+:root[data-theme="light"]{--bg:#f3f6f8;--bg2:#e9eef2;--fg:#0d141b;--mute:#52606d;--line:#d3dbe2;--card:#ffffff;--acc:#0f8f7f;--acc2:#5b48e0;--warn:#c2410c;--ok:#15803d;--glow:0 0 0 1px rgba(15,143,127,.35),0 0 20px rgba(15,143,127,.12);color-scheme:light}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--fg)}
+body{font-family:'Instrument Sans',system-ui,sans-serif;font-size:15.5px;line-height:1.5;background:radial-gradient(1200px 600px at 80% -10%,rgba(139,124,255,.14),transparent 60%),radial-gradient(900px 500px at -10% 110%,rgba(56,232,208,.10),transparent 60%),var(--bg)}
+h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;line-height:1.1;margin:0;text-wrap:balance}
+h1{font-size:clamp(26px,4.5vw,40px);font-weight:700}h2{font-size:clamp(20px,3vw,26px);margin:0 0 10px}h3{font-size:16px;margin:0 0 6px}
+p{margin:0 0 10px;max-width:72ch}.mute{color:var(--mute)}
+.k{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--acc)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(7,10,15,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+:root[data-theme="light"] .top{background:rgba(243,246,248,.85)}@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .top{background:rgba(243,246,248,.85)}}
+.topin{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.brand{font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:.02em;display:flex;align-items:center;gap:8px}.brand i{width:10px;height:10px;border-radius:50%;background:var(--acc);box-shadow:0 0 12px var(--acc);display:inline-block}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.tab{background:transparent;border:1px solid transparent;color:var(--mute);font:inherit;font-weight:600;font-size:13.5px;padding:7px 11px;border-radius:999px;cursor:pointer}
+.tab:hover{color:var(--fg)}.tab.on{color:var(--fg);border-color:var(--line);background:var(--card);box-shadow:var(--glow)}
+.wrap{max-width:1180px;margin:0 auto;padding-block:26px 70px;padding-inline:16px}
+section[hidden]{display:none}
+.hero{display:grid;gap:22px;grid-template-columns:1.2fr .8fr;align-items:center}@media(max-width:860px){.hero{grid-template-columns:1fr}}
+.btn{display:inline-flex;align-items:center;gap:8px;font:inherit;font-weight:600;font-size:14px;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;text-decoration:none}
+.btn.p{background:var(--acc);color:#04110f;border-color:transparent}.btn.p:hover{filter:brightness(1.08)}.btn.g{background:transparent}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0;position:relative}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.two{display:grid;gap:18px;grid-template-columns:minmax(0,1.05fr) minmax(300px,.95fr)}@media(max-width:900px){.two{grid-template-columns:1fr}}
+.stepnav{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 18px}.stepnav button{font:inherit;font-family:var(--mono);font-size:12px;padding:5px 9px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--mute);cursor:pointer}
+.stepnav button.on{color:var(--fg);border-color:var(--acc);box-shadow:var(--glow)}.stepnav button.done{color:var(--ok);border-color:rgba(91,227,154,.4)}
+.step{animation:fade .25s ease}.step[hidden]{display:none}@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.field{margin:12px 0}.field label{display:block;font-weight:600;font-size:14px;margin-bottom:4px}.field .hint{font-size:13px;color:var(--mute);margin-bottom:6px}
+input[type=text],textarea,select{width:100%;font:inherit;font-size:14.5px;color:var(--fg);background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{min-height:76px;resize:vertical}input:focus,textarea:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:var(--glow)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.chip{font:inherit;font-size:12.5px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--mute);cursor:pointer}.chip:hover{color:var(--fg)}
+.hf{border-left:3px solid var(--acc2);background:rgba(139,124,255,.08);padding:10px 12px;border-radius:0 10px 10px 0;font-size:13.5px;margin:12px 0}.hf b{color:var(--acc2)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.avatar{position:sticky;top:76px}
+.cardx{background:linear-gradient(160deg,rgba(56,232,208,.08),rgba(139,124,255,.08)),var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--glow);position:relative}
+.cardx .nm{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700}.cardx .ln{color:var(--mute);font-size:13.5px;min-height:18px}
+.extag{position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--acc)}
+.turn{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.turn figure{margin:0;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:6px 4px 4px;text-align:center}.turn svg{width:100%;height:auto;display:block}.turn figcaption{font-family:var(--mono);font-size:10.5px;color:var(--mute);margin-top:4px;letter-spacing:.05em}
+.sheetimg{width:100%;height:auto;display:block;border-radius:10px;border:1px solid var(--line);margin:12px 0 8px;background:#fff}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px}.stat{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:6px 8px}.stat b{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--mute);text-transform:uppercase}.stat span{font-size:13px}
+.expr{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}.expr div{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:6px;text-align:center;font-size:12px}.expr svg{width:100%;height:auto;display:block;margin-bottom:3px}
+.lock{border:1px solid rgba(255,122,89,.5);background:rgba(255,122,89,.08);border-radius:10px;padding:8px 10px;font-size:12.5px;margin-top:10px}.lock b{color:var(--warn);font-family:var(--mono);font-size:11px;letter-spacing:.08em}
+.bar{height:6px;background:var(--bg2);border-radius:999px;overflow:hidden;margin-top:10px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));width:0;transition:width .3s}
+.flow{display:flex;gap:8px;flex-wrap:wrap}.node{flex:1 1 170px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;min-width:0}.node b{display:block;font-family:var(--mono);font-size:11px;color:var(--acc);letter-spacing:.06em;margin-bottom:3px}.node small{display:block;color:var(--mute);font-size:12.5px;margin-top:4px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);font-weight:500}td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.num{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:var(--acc);line-height:1}.find{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}.find .card small{display:block;color:var(--mute);font-size:12px;margin-top:6px;font-family:var(--mono)}
+img.ph{width:100%;height:auto;border-radius:10px;border:1px solid var(--line);display:block}
+pre{font-family:var(--mono);font-size:12.5px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:12px;overflow-x:auto;white-space:pre-wrap;max-height:420px}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--acc);color:#04110f;font-weight:600;padding:9px 14px;border-radius:999px;opacity:0;transition:.2s;pointer-events:none;z-index:30}.toast.on{opacity:1}
+video{width:100%;max-width:360px;border-radius:14px;border:1px solid var(--line);display:block;background:#000}
+.badge{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--mute);margin-bottom:6px}.badge.ok{color:var(--ok);border-color:rgba(91,227,154,.4)}.badge.no{color:var(--warn);border-color:rgba(255,122,89,.5)}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-top:8px}.photos div{aspect-ratio:3/4;border:1px dashed var(--line);border-radius:8px;overflow:hidden;background:var(--bg2);font-size:10.5px;color:var(--mute);display:flex;align-items:center;justify-content:center;text-align:center;padding:4px}.photos img{width:100%;height:100%;object-fit:cover}
+ul.t{padding-left:20px;margin:0}ul.t li{margin-bottom:6px}
+.out{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-top:8px}.out .stat span{font-size:12.5px;line-height:1.35;display:block}
+.lib .card img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block;margin-bottom:8px;background:var(--bg2)}
+.lib .card .nm{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700}.lib .card small{display:block;color:var(--mute);font-family:var(--mono);font-size:11px;margin:2px 0 8px}
+.foot{margin-top:50px;border-top:1px solid var(--line);padding-top:14px;color:var(--mute);font-size:12.5px}
+</style></head><body>
+<div class="top"><div class="topin">
+ <div class="brand"><i></i>AI CHARACTER STUDIO</div>
+ <nav class="tabs" id="tabs">
+  <button class="tab on" data-t="start">Start</button>
+  <button class="tab" data-t="char">AI Character</button>
+  <button class="tab" data-t="twin">Digital Twin</button>
+  <button class="tab" data-t="lib">Library</button>
+  <button class="tab" data-t="how">How it works</button>
+  <button class="tab" data-t="data">The data</button>
+  <button class="tab" data-t="reel">Your reel</button>
+ </nav>
+</div></div>
+<div class="wrap">
+
+<!-- START -->
+<section id="t-start">
+ <div class="hero">
+  <div>
+   <div class="k">Guided builder · v4 · 2026-10-15</div>
+   <h1>Build a person the camera believes.</h1>
+   <p class="mute" style="font-size:17px">Answer the steps, or type one paragraph and let the studio fill the rest. You get a continuity card, a build pack, and a finished reel of an invented character or of yourself.</p>
+   <p>This front end sits on top of Higgsfield. The platform renders; this guide decides. The decisions come from <b>322 real creator reels</b> measured frame by frame and <b>232 posts</b> audited for what the algorithm rewards, so your character talks, moves and pauses like the people who already win in your niche.</p>
+   <div class="row">
+    <button class="btn p" onclick="go('char')">Create a character →</button>
+    <button class="btn" onclick="go('twin')">Clone myself instead</button>
+    <button class="btn g" onclick="go('how')">How the flow works</button>
+   </div>
+  </div>
+  <div class="cardx"><span class="extag">Example</span>
+   <div class="k">Finished character · Nadia Marin</div>
+   <img class="sheetimg" src="assets/face.jpg" alt="Nadia Marin, face module from her continuity sheet">
+   <p class="mute" style="font-size:13px;margin:0">Invented in this studio on Oct 13. Plate → 11-angle training set → trained identity → continuity sheet → designed voice → reel 002, gate score 82. Open the <a href="#" onclick="go('char');return false" style="color:var(--acc)">AI Character</a> tab to see every field as it was filled.</p>
+  </div>
+ </div>
+ <h2 style="margin-top:40px">Two tracks, one machine</h2>
+ <div class="grid">
+  <div class="card"><div class="k">Track A</div><h3>AI character</h3><p>Someone who does not exist. You design the face, the mark, the room, the voice, the position she takes. Best when the account must survive platform rules without your name on it.</p><p class="mute" style="font-size:13px">8 steps · about 20 minutes · about 75 credits to the first reel.</p></div>
+  <div class="card"><div class="k">Track B</div><h3>Digital twin</h3><p>You, posting without filming. Ten to fifteen photos and a voice memo become a trained identity and a voice. Same reel machine, your face and your words.</p><p class="mute" style="font-size:13px">6 steps · about 15 minutes plus a 10-minute training wait · about 30 credits to the first reel.</p></div>
+  <div class="card"><div class="k">Both end with</div><h3>A reel that passes a gate</h3><p>Every render is scored against the human baseline on six dimensions. Below 70 overall it does not ship. The score card comes back with the reel.</p><p class="mute" style="font-size:13px">Gate: overall ≥ 70, every dimension ≥ 55.</p></div>
+ </div>
+</section>
+
+<!-- CHARACTER WIZARD -->
+<section id="t-char" hidden>
+ <div class="k">Track A · AI character</div>
+ <h2>Design the person</h2>
+ <p class="mute">Read the description, type under it. The card on the right fills as you go. "Autofill" writes every later step from your brief; change anything you like after.</p>
+ <div class="two">
+  <div>
+   <div class="stepnav" id="nav-char"></div>
+   <div id="steps-char"></div>
+  </div>
+  <aside class="avatar" id="card-char"></aside>
+ </div>
+</section>
+
+<!-- TWIN WIZARD -->
+<section id="t-twin" hidden>
+ <div class="k">Track B · Digital twin</div>
+ <h2>Clone yourself</h2>
+ <p class="mute">Your real photos become the identity and your voice memo becomes the voice. Photos never leave this page; the build pack lists what to send to the studio.</p>
+ <div class="two">
+  <div>
+   <div class="stepnav" id="nav-twin"></div>
+   <div id="steps-twin"></div>
+  </div>
+  <aside class="avatar" id="card-twin"></aside>
+ </div>
+</section>
+
+<!-- LIBRARY -->
+<section id="t-lib" hidden>
+ <div class="k">Library</div>
+ <h2>Your library</h2>
+ <p class="mute">Every character and every version of a character, with its full state: every field, every phase output, the sheet, the reel and its score. Open one and the build sections, the card and the reel fill back in exactly as saved. Your own characters are saved in this browser; export a card's JSON to move it to another.</p>
+ <div class="row" style="margin:0 0 16px">
+  <button class="btn p" onclick="saveChar(false)">Save current character</button>
+  <button class="btn" onclick="saveChar(true)">Save &amp; create new</button>
+  <label class="btn g" style="cursor:pointer">Import JSON <input type="file" accept="application/json,.json" style="display:none" onchange="importChar(event)"></label>
+ </div>
+ <div class="grid lib" id="libgrid"></div>
+</section>
+
+<!-- HOW -->
+<section id="t-how" hidden>
+ <div class="k">The Higgsfield flow</div>
+ <h2>What each step does on the platform</h2>
+ <p>Higgsfield is the render engine: image models, a trainable face identity, video models with native speech, voice tools. This guide is the layer that tells it what to make and checks the result. Nine steps, in order. The left column is what you do here, the middle is what the platform does, the right is the number that comes back.</p>
+ <div class="flow" style="margin:14px 0 18px">
+  <div class="node"><b>1 · PLATE</b>Identity portrait<small>flat grey, no key light</small></div>
+  <div class="node"><b>2 · ELEMENT</b>Saved reference<small>instant, 0 cr</small></div>
+  <div class="node"><b>3 · SET</b>12 angles<small>both profiles, hard sun, hair change</small></div>
+  <div class="node"><b>4 · SOUL</b>Trained identity<small>11+ face-visible photos</small></div>
+  <div class="node"><b>5 · SHEET</b>Continuity card<small>9 modules + lock box</small></div>
+  <div class="node"><b>6 · VOICE</b>Designed or cloned<small>measured WPM before video</small></div>
+  <div class="node"><b>7 · FRAME</b>Start still<small>Soul + the room</small></div>
+  <div class="node"><b>8 · VIDEO</b>Talking clip<small>voice measured, motion prompted</small></div>
+  <div class="node"><b>9 · GATE</b>Score ≥ 70<small>then captions, then post</small></div>
+ </div>
+ <div class="tbl"><table>
+  <tr><th>#</th><th>You do (here)</th><th>Higgsfield does</th><th>Model</th><th>Credits</th><th>Time</th><th>Gate</th></tr>
+  <tr><td>1</td><td>Fill the design sheet. The guide writes the plate prompt: biological realism on, photographic capture off.</td><td>Renders 4 candidates of the face on a flat grey field.</td><td>Soul 2.0 ×2, GPT Image 2.5, Nano Banana 2.1</td><td class="n">5</td><td class="n">1 min</td><td>You pick one. Neutral mouth, mark visible, texture sharp.</td></tr>
+  <tr><td>2</td><td>Nothing.</td><td>Saves the plate as a Reference Element every image model can be pointed at.</td><td>Elements</td><td class="n">0</td><td class="n">instant</td><td></td></tr>
+  <tr><td>3</td><td>Nothing. The 12-angle matrix is fixed.</td><td>Generates the training set with the plate as reference: both profiles, hard sun, golden hour, hair down, a selfie, full body.</td><td>Nano Banana 2.1 batch</td><td class="n">24</td><td class="n">2 min</td><td>Contact sheet. Same person in every tile or re-roll the tile.</td></tr>
+  <tr><td>4</td><td>Nothing.</td><td>Trains a Soul on the face-visible photos (profiles and full body excluded; that mistake failed a training once).</td><td>Soul 2.0 training</td><td class="n">≈ 26</td><td class="n">10 min</td><td>Status = ready, then one test still.</td></tr>
+  <tr><td>5</td><td>Nothing. The card you built here is the spec.</td><td>Renders the 9-module continuity sheet: profile, turnaround, face macros, 8 expressions, 6 poses, costume macros, palette, lock box, performance profile.</td><td>GPT Image 2.5 ×2</td><td class="n">5.5</td><td class="n">2 min</td><td>Labels and hex codes read back exactly.</td></tr>
+  <tr><td>6</td><td>Choose the register. Or upload your own memo (twin).</td><td>Designs 3 voice previews, or clones yours. Lines are generated and measured: words per minute, pause length, long pauses.</td><td>ElevenLabs voice design / clone</td><td class="n">0 to ≈ 1</td><td class="n">3 min</td><td>193 to 203 WPM, median pause ≈ 0.38 s, zero pauses over 0.7 s.</td></tr>
+  <tr><td>7</td><td>Nothing. Your room and wardrobe lock are the prompt.</td><td>Renders the paused-phone-video still from the Soul.</td><td>Soul 2.0 + soul id</td><td class="n">0.12</td><td class="n">30 s</td><td>Mouth closed, hands visible, no ring light.</td></tr>
+  <tr><td>8</td><td>Approve the script (the guide writes it from your pillars, 28 words or fewer per clip, with a performance sheet per line).</td><td>Animates the still to the measured voice with the micro-movements from the data: relaxed brows, glances, one open-palm gesture.</td><td>Wan 2.7 (measured voice) or Seedance 2.5 native speech</td><td class="n">27.5 per clip · 45 draft · 180 1080p</td><td class="n">5 min</td><td>Humanness score.</td></tr>
+  <tr><td>9</td><td>Watch it once.</td><td>Scores six dimensions against the human baseline, burns captions, keeps a clean master.</td><td>reel-forensics gate, reel-build</td><td class="n">0</td><td class="n">1 min</td><td>≥ 70 overall and ≥ 55 each, else up to 3 fix rounds.</td></tr>
+ </table></div>
+ <div class="grid" style="margin-top:18px">
+  <div class="card"><span class="extag">Example</span><div class="k">Step 5 · continuity sheet, page 1</div><img class="ph" src="assets/page1.jpg" alt="Continuity sheet page one" style="margin-top:8px"><p class="mute" style="font-size:12.5px;margin-top:6px">Profile, turnaround, face and identity macros, costume, palette, lock box.</p></div>
+  <div class="card"><span class="extag">Example</span><div class="k">Step 5 · continuity sheet, page 2</div><img class="ph" src="assets/page2.jpg" alt="Continuity sheet page two" style="margin-top:8px"><p class="mute" style="font-size:12.5px;margin-top:6px">Eight expressions, six poses, and the performance profile the voice and video models are held to.</p></div>
+  <div class="card"><span class="extag">Example</span><div class="k">Step 6 to 9 · performance profile</div><img class="ph" src="assets/perf.jpg" alt="Performance profile module" style="margin-top:8px"><p class="mute" style="font-size:12.5px;margin-top:6px">Speaking rate, pauses, brow level, glances, hands in frame, cut cadence: the numbers the gate scores.</p></div>
+ </div>
+ <h3 style="margin-top:22px">Why the order matters</h3>
+ <ul class="t">
+  <li><b>Still first, then animate.</b> Text-to-video re-rolls the face every clip. A trained identity plus a start frame does not.</li>
+  <li><b>Measure the voice before you render.</b> Words per minute and pause length are checked on the audio before any video credit is spent. Pace is the loudest AI tell in the data; a preset text-to-speech track at 113 words per minute failed three times.</li>
+  <li><b>Prompt the micro-movements.</b> Relaxed brows, a glance down, one open-palm gesture, room tone at −43 dBFS. Each one is a measured gap between the failed renders and the human baseline.</li>
+  <li><b>One lock box.</b> The continuity sheet ends in a "do not change" block written as a negative prompt, so every future render carries the same mark, brows, hair and jewelry.</li>
+ </ul>
+ <h3 style="margin-top:22px">Digital twin differences</h3>
+ <p>Steps 1 to 3 are replaced by your photos: your best photo is the plate and the Element, the training set is your 10 to 15 real shots, and the continuity sheet is a hybrid with your real face pasted into the face panel. Step 6 is your own recording (0 credits) or a clone of it. Everything from step 7 on is identical.</p>
+</section>
+
+<!-- DATA -->
+<section id="t-data" hidden>
+ <div class="k">What the data says</div>
+ <h2>Measured, not guessed</h2>
+ <p>Two corpora. <b>Reel forensics:</b> 322 reels from 14 real creators in the niche, about 150 features per reel across face, motion, edit, voice and script, run frame by frame with a human baseline split into clinical experts and practitioners. <b>Rule audit:</b> 232 posts from 8 accounts with view counts, read for hooks, calls to action, captions and compliance. The targets below are what the studio now prompts, measures and gates against.</p>
+ <h3 style="margin-top:18px">The tells that give an avatar away</h3>
+ <div class="find">
+  <div class="card"><div class="num">200</div><p>words per minute is human in this niche (p10 to p90: 157 to 243). The failed avatar spoke at 113. Pace was the loudest tell.</p><small>reel forensics · 322 reels</small></div>
+  <div class="card"><div class="num">0</div><p>long pauses per minute for humans (≥ 0.7 s). The avatar had 14. Median human pause 0.38 s versus 0.77 s.</p><small>reel forensics</small></div>
+  <div class="card"><div class="num">39</div><p>glances away per minute (range 16 to 51). The avatar did 12, which reads as a stare. Brows should sit near 0.14, not pinned at 0.59.</p><small>reel forensics · face features</small></div>
+  <div class="card"><div class="num">−42</div><p>dBFS room noise floor for real phone videos; speech around −23. The avatar's room was −91: too clean, and the ear notices.</p><small>reel forensics · audio</small></div>
+  <div class="card"><div class="num">1.6</div><p>"evidence words" per 100 words in human scripts. The avatar scripts carried 8.7 to 9.1. Experts cite less, not more.</p><small>reel forensics · script</small></div>
+  <div class="card"><div class="num">69 · 75 · 82</div><p>gate scores of the three generations (≥ 70 overall, every dimension ≥ 55). The first two failed on prosody: 52, then 42. The third, with a measured voice, scored 87 on prosody.</p><small>reel forensics · gate</small></div>
+ </div>
+ <h3 style="margin-top:22px">What authority looks like on camera</h3>
+ <div class="grid">
+  <div class="card"><h3>Experts vs practitioners</h3><ul class="t"><li>Experts speak slower: 184 vs 199 WPM.</li><li>Press lips between phrases (+0.47), furrow more (+0.43), raise brows less (−0.34).</li><li>Turn the head more, not less: yaw 7.8° vs 5.9°. They also smile more.</li><li>Cite fewer numbers.</li></ul><small class="mute" style="font-family:var(--mono);font-size:12px">79 clinical vs 141 practitioner reels</small></div>
+  <div class="card"><h3>Edit and framing targets</h3><ul class="t"><li>5 to 7 cuts per minute, median shot 5 to 6 s.</li><li>Talking head ≥ 97% of runtime.</li><li>Face 21 to 24% of frame height, hands in frame 80% of the time.</li><li>Burned-in text on 55 to 60% of frames; a music bed in about half the reels at −9 dB.</li></ul><small class="mute" style="font-family:var(--mono);font-size:12px">reel forensics · targets</small></div>
+  <div class="card"><h3>Realism rules for the face</h3><ul class="t"><li>Muted catchlights, no oversized specular glare.</li><li>Visible pores, fine lines, subtle asymmetry, one signature mark.</li><li>Flat grey plate, no key light, 50 mm. The scene prompt lights the room later.</li><li>Stills carry most of video quality. A beauty filter is the fastest way to read as 2025 AI.</li></ul><small class="mute" style="font-family:var(--mono);font-size:12px">realism research · ~70 sources</small></div>
+ </div>
+ <h3 style="margin-top:22px">What the algorithm rewards (peptide niche, 232 posts)</h3>
+ <div class="tbl"><table>
+  <tr><th>Pattern</th><th>Median views</th><th>Versus</th><th>Rule the studio applies</th></tr>
+  <tr><td>"Follow" as the call to action (14 of top 30)</td><td class="n">138,000</td><td class="n">link in bio 45,300</td><td>CTA is "follow" or nothing on 4 of 5 posts.</td></tr>
+  <tr><td>Comment-keyword CTAs</td><td class="n">15,800</td><td class="n">follow 52,700</td><td>Never the "comment X" funnel.</td></tr>
+  <tr><td>Compound named in the caption</td><td class="n">25,300</td><td class="n">14,200 without</td><td>Name it in the caption, not a purchase path.</td></tr>
+  <tr><td>No caption disclaimer (64% of posts)</td><td class="n">24,600</td><td class="n">15,600 with</td><td>One line only on stack-adjacent posts.</td></tr>
+  <tr><td>Dosing numbers in the post</td><td class="n">6,245</td><td class="n">21,200 overall</td><td>Never a dose. Zero of the top 30 had one.</td></tr>
+  <tr><td>First-person experiment</td><td class="n">25,200</td><td class="n">third person 20,900</td><td>"Here's what I tracked" beats "studies show".</td></tr>
+  <tr><td>Top hook types (top 25)</td><td colspan="2">movie clip 40% · self-experiment 20% · authority Q&A 20% · study specificity 12%</td><td>Hook mid-thought with a number, no greeting, no pitch.</td></tr>
+  <tr><td>Closing lines in the top 10 with a disclaimer</td><td class="n">0</td><td></td><td>End on the correction or the punchline. Stop.</td></tr>
+ </table></div>
+ <p style="margin-top:12px" class="mute">The one rule every platform enforces: a compound plus a way to buy it. A 226K-follower account was removed over a discount code. The character is an education property; the store lives one hop away.</p>
+</section>
+
+<!-- REEL -->
+<section id="t-reel" hidden>
+ <div class="k">Output</div>
+ <h2>Your reel</h2>
+ <div class="two">
+  <div>
+   <div id="packwrap" class="card"><p class="mute">Finish a track and press "Build my reel". Your build pack appears here: the design sheet, every prompt in order, the script, the credit quote and the gate targets. The studio runs it and returns the reel with its score card.</p></div>
+   <div class="row" id="packbtns" hidden>
+    <button class="btn p" onclick="copyPack()">Copy build pack</button>
+    <a class="btn" id="dl" download="build-pack.txt" href="#">Download</a>
+    <button class="btn g" onclick="go('char')">Edit answers</button>
+   </div>
+  </div>
+  <div>
+   <div class="card" id="reelcard"></div>
+  </div>
+ </div>
+</section>
+
+<div class="foot">AI Character Studio · guided builder over Higgsfield · data: reel forensics (322 reels, 14 accounts, 2026-10-14) and the Instagram rule audit (232 posts, 2026-10-09). Every post carries the AI-generated label. Never publish a plate or a training set.</div>
+</div>
+<div class="toast" id="toast">Copied</div>
+
+<script src="characters/index.js"></script>
+<script>
+/* ---------- state ---------- */
+const S={char:{},twin:{},cur:{char:0,twin:0},loaded:null,demoSeen:false};
+try{const s=localStorage.getItem('acs-guide-v4');if(s)Object.assign(S,JSON.parse(s))}catch(e){}
+function save(){try{localStorage.setItem('acs-guide-v4',JSON.stringify(S))}catch(e){}}
+function toast(t){const e=document.getElementById('toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),1400)}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+/* ---------- bundled + library ---------- */
+const BUNDLED=(window.ACS_BUNDLED||[]);
+function userLib(){try{return JSON.parse(localStorage.getItem('acs-library-v1')||'[]')}catch(e){return []}}
+function setUserLib(a){try{localStorage.setItem('acs-library-v1',JSON.stringify(a))}catch(e){toast('Could not save in this browser')}}
+function allChars(){return BUNDLED.concat(userLib())}
+function findChar(id){return allChars().find(c=>c.id===id)}
+function loadedProfile(){return S.loaded?findChar(S.loaded):null}
+function isExample(track){const p=loadedProfile();return !!(p&&p.bundled&&(p.track||'char')===track)}
+function loadChar(id,goto){const p=findChar(id);if(!p)return;const tr=p.track||'char';S[tr]=JSON.parse(JSON.stringify(p.fields||{}));S.loaded=id;S.cur[tr]=(tr==='char'?CHAR.length:TWIN.length)-1;save();render('char');render('twin');reelCard();if(goto!==false)go(tr);if(goto!==false)toast('Loaded '+p.name)}
+function currentProfile(){const tr=S.lastTrack||'char';const st=S[tr];const p=loadedProfile();const bundled=!!(p&&p.bundled);const base=(p&&!bundled)?p:null;
+ return {id:base?base.id:('c-'+Date.now().toString(36)),bundled:false,name:st.name||(tr==='twin'?'My twin':'Unnamed'),archetype:st.archetype||'',track:tr,created:base?base.created:new Date().toISOString().slice(0,10),updated:new Date().toISOString().slice(0,10),
+  fields:JSON.parse(JSON.stringify(st)),checks:(base&&base.checks)||{},performance:(base&&base.performance)||{},outputs:(base&&base.outputs)||{},thumb:(st.photoThumbs&&st.photoThumbs[0])||(base&&base.thumb)||''}}
+function saveChar(createNew){const prof=currentProfile();if(!prof.fields||Object.keys(prof.fields).length===0){toast('Nothing to save yet');return}
+ const lib=userLib();const i=lib.findIndex(c=>c.id===prof.id);if(i>=0)lib[i]=prof;else lib.push(prof);setUserLib(lib);S.loaded=prof.id;
+ if(createNew){const tr=prof.track;S[tr]={};S.cur[tr]=0;S.loaded=null;save();render(tr);reelCard();renderLib();go(tr);toast('Saved. New character started.');return}
+ save();render(prof.track);reelCard();renderLib();go('lib');toast('Saved '+prof.name)}
+function deleteChar(id){const p=findChar(id);if(!p||p.bundled)return;setUserLib(userLib().filter(c=>c.id!==id));if(S.loaded===id)S.loaded=null;save();renderLib();toast('Removed')}
+function exportChar(id){const p=findChar(id);if(!p)return;const txt=JSON.stringify(p,null,1);
+ if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>toast('JSON copied')).catch(()=>toast('Copy blocked here'))}
+ try{const a=document.createElement('a');a.href='data:application/json;charset=utf-8,'+encodeURIComponent(txt);a.download=(p.id||'character')+'.json';document.body.appendChild(a);a.click();a.remove()}catch(e){}}
+function importChar(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const p=JSON.parse(r.result);if(!p.fields)throw 0;p.bundled=false;p.id=p.id&&!BUNDLED.some(b=>b.id===p.id)?p.id:('c-'+Date.now().toString(36));const lib=userLib();const i=lib.findIndex(c=>c.id===p.id);if(i>=0)lib[i]=p;else lib.push(p);setUserLib(lib);renderLib();toast('Imported '+(p.name||'character'))}catch(e){toast('Not a character file')}};r.readAsText(f);ev.target.value=''}
+function renderLib(){const g=document.getElementById('libgrid');const cs=allChars();g.innerHTML=cs.map(c=>{const th=c.thumb||(c.outputs&&c.outputs.sheet&&c.outputs.sheet.face)||'';return `<div class="card">${c.bundled?'<span class="extag">Example</span>':''}${th?`<img src="${esc(th)}" alt="">`:`<div style="aspect-ratio:3/4;border:1px dashed var(--line);border-radius:10px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;color:var(--mute);font-size:12px;text-align:center;padding:12px">${c.track==='twin'?'photos pending':'no image yet'}</div>`}<div class="nm">${esc(c.name)}</div><small>${esc(c.variant||c.archetype||'')}${c.outputs&&c.outputs.reel&&c.outputs.reel.score?' · gate '+c.outputs.reel.score.overall:''} · ${esc(c.updated||c.created||'')}${c.track==='twin'?' · digital twin':''}</small><div class="row" style="margin-top:4px"><button class="btn p" onclick="loadChar('${esc(c.id)}')">Open</button><button class="btn g" onclick="exportChar('${esc(c.id)}')">Export</button>${c.bundled?'':`<button class="btn g" onclick="deleteChar('${esc(c.id)}')">Delete</button>`}</div></div>`}).join('')||'<p class="mute">No characters yet.</p>'}
+/* ---------- tabs ---------- */
+function go(t){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));['start','char','twin','lib','how','data','reel'].forEach(k=>document.getElementById('t-'+k).hidden=(k!==t));window.scrollTo({top:0,behavior:'smooth'});try{history.replaceState(null,'','#'+t)}catch(e){}}
+document.getElementById('tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(b)go(b.dataset.t)});
+/* ---------- step definitions ---------- */
+const HF=(t)=>`<div class="hf"><b>On Higgsfield:</b> ${t}</div>`;
+const CHAR=[
+ {id:'brief',title:'The brief',desc:'One paragraph. What is the account for, who watches, which platform, what should people feel after a video. Then press Autofill and the studio writes the rest from the data; or keep typing step by step.',
+  hf:'Nothing yet. This paragraph becomes the archetype, the room, the voice register and the content pillars.',
+  fields:[{k:'brief',l:'What do you want this character to do?',ta:1,ph:'A woman, trustworthy, educated, tests peptides on herself, in shape, a Dr. Rhonda Patrick type that women 28 to 50 can look to. Instagram first.'},
+          {k:'platform',l:'Platform',chips:['Instagram Reels','TikTok','YouTube Shorts','Instagram + TikTok']},
+          {k:'niche',l:'Niche in three words',ph:'research peptides, women'}]},
+ {id:'identity',title:'Identity',desc:'Name, handle, age and body. Age reads from bone structure and fine lines, so pick a real number, not "30s". Height and weight go on the card and keep the full-body renders consistent.',
+  hf:'These become the stats form on the continuity sheet and the height guide beside the full-body figure.',
+  fields:[{k:'name',l:'Name',ph:'Nadia Marin'},{k:'handle',l:'Handle idea',ph:'@nof1.nadia'},{k:'age',l:'Age',ph:'38'},{k:'gender',l:'Gender',chips:['Female','Male','Non-binary']},{k:'height',l:'Height',ph:'5 ft 8 in'},{k:'weight',l:'Weight',ph:'148 lbs'},{k:'build',l:'Build',chips:['athletic','lean','soft','strong','average']}]},
+ {id:'face',title:'Face',desc:'This is the identity plate. Be specific and slightly imperfect: skin texture, a real nose, one asymmetry. Flawless is the fastest way to read as AI.',
+  hf:'Step 1, the plate prompt. Four candidates on a flat grey field; you pick one and it is never run through a model again.',
+  fields:[{k:'skin',l:'Skin',ph:'light olive-tan, matte, visible pores, first fine lines at the outer eyes',chips:['light olive, matte','deep warm brown, dewy','pale with freckles','medium tan, sun lines']},
+          {k:'faceshape',l:'Face and jaw',ph:'long oval, high cheekbones, straight strong jaw'},{k:'nose',l:'Nose',ph:'straight with a slight dorsal bump'},{k:'lips',l:'Lips',ph:'medium-full, muted rose, matte; left corner lifts first'},{k:'eyes',l:'Eyes and brows',ph:'dark brown, slightly hooded, direct; strong straight brows'},
+          {k:'mark',l:'Signature mark (the one thing only she has)',ph:'a thin pale 1-inch scar on the left collarbone, a small flat mole on the left jawline',chips:['collarbone scar','brow scar','jaw mole','chipped front tooth','freckle cluster on one cheek']}]},
+ {id:'hair',title:'Hair, jewelry, wardrobe',desc:'Lock what repeats. The hair silhouette is how a thumbnail recognises her; two wardrobe slots cover 90% of posts.',
+  hf:'Written into every training-set prompt as the identity lock, then into the lock box on the continuity sheet.',
+  fields:[{k:'hair',l:'Hair',ph:'dark espresso-brown, shoulder length, low sleek ponytail, centre part, a few silver strands',chips:['low sleek ponytail','close-cropped coils','shoulder-length waves','short textured crop','long straight, tucked behind ears']},
+          {k:'jewelry',l:'Jewelry',ph:'small silver studs, slim steel watch on the left wrist, no rings, no necklace'},
+          {k:'wardA',l:'Wardrobe slot A (on camera)',ph:'black tailored cotton button-down, top button open, sleeves rolled twice, charcoal trousers'},{k:'wardB',l:'Wardrobe slot B (training / off-duty)',ph:'black ribbed tank, heather-grey joggers, thin black headband'},
+          {k:'palette',l:'Signature colours',ph:'chalk white, graphite, warm oak, black iron, one safety-orange accent'}]},
+ {id:'room',title:'The room',desc:'Her set is a character too. One recurring space with props that belong to her, light from one side, nothing clinical. Say what is out of focus and who is not in frame.',
+  hf:'Step 7, the start frame prompt: "paused phone video" in this room, mouth closed, hands visible.',
+  fields:[{k:'setting',l:'Setting',ta:1,ph:'podcast studio, seated at a dark wood desk, a broadcast dynamic microphone on a boom arm angled in from camera left, over-ear headphones around her neck, two acoustic panels and a warm lamp behind her, a water glass and marked-up papers, no interviewer in frame',chips:['podcast studio desk','apartment test bench','kitchen table desk','home gym corner','studio with a bookshelf','car front seat (selfie)']},
+          {k:'light',l:'Light',chips:['soft key light from camera right','window daylight from the right','window daylight from the left','warm evening lamp','overcast outdoors']}]},
+ {id:'persona',title:'Persona and voice',desc:'One sentence that only this character could own, a flaw that makes her human, and the voice register. The register sets pace targets: experts speak slower and pause more.',
+  hf:'Step 6. Voice design previews in this register; lines are measured for words per minute and pause length before any video is rendered.',
+  fields:[{k:'persona',l:'Persona sentence (paste into every prompt and script)',ta:1,ph:'a calm, fit, former bench scientist who runs every peptide claim through the actual paper and her own bloodwork, and says "that\'s not what the study showed" with a half-smile'},
+          {k:'archetype',l:'Archetype',chips:['the skeptic who tests','the coach who simplifies','the insider who follows the money','the researcher who reads the paper','the friend who tried it first']},
+          {k:'flaw',l:'Human flaw',ph:'interrupts herself to correct a number; forgets the coffee; over-annotates with orange tabs'},
+          {k:'voice',l:'Voice',chips:['dry, warm, lower-mid, unhurried','bright, quick, friendly','low, measured, authoritative','soft, deliberate, patient'],ph:'dry, warm, unhurried; lower-mid register; slight Midwest flatness'},
+          {k:'catch',l:'Catchphrase',ph:'Pull the paper.'}]},
+ {id:'content',title:'Content and rules',desc:'Four or five pillars, series names, and the forbidden list. The data says: hook mid-thought with a number, no greeting, no pitch, "follow" or nothing as the call to action, never a dose.',
+  hf:'Step 8. The first script is written from pillar one with the hook skeleton from the top-25 reels, 28 words or fewer per clip, with a performance sheet per line.',
+  fields:[{k:'pillars',l:'Content pillars',ta:1,ph:'1 self-experiments (process, never amounts) · 2 claim vs the paper · 3 one study per video · 4 how to read a certificate · 5 women\'s physiology'},
+          {k:'series',l:'Series names',ph:'N of 1 · BS Check · Paper of the Week · Read the COA'},
+          {k:'forbid',l:'Forbidden list',ta:1,ph:'no lab coat, no vials, no "Dr.", no beauty filter, no ring light, no before/after, no exclamation marks, no doses, no vendor names'},
+          {k:'first',l:'First post idea',ph:'Collagen powder and copper peptides are not the same molecule.'}]},
+ {id:'review',title:'Review and build',desc:'Check the card. Everything on it becomes the continuity sheet, the lock box and the prompts. Then build, or save it to your library.',
+  hf:'Steps 1 to 9 run in order from this pack. First reel in about 25 minutes if the gate passes on round one.',
+  fields:[],review:true}
+];
+const TWIN=[
+ {id:'brief',title:'The brief',desc:'What you post about, who it is for, which platform, and how you want to come across on camera. Autofill writes your pillars and your first script from it.',
+  hf:'Nothing yet.',
+  fields:[{k:'brief',l:'What should your twin post?',ta:1,ph:'Short educational clips on research peptides for my store\'s audience. Calm, direct, no hype. Instagram.'},{k:'platform',l:'Platform',chips:['Instagram Reels','TikTok','YouTube Shorts','Instagram + TikTok']},{k:'name',l:'Your name as shown',ph:'Ty'}]},
+ {id:'photos',title:'Photos (10 to 15)',desc:'This replaces the plate and the training set. Face visible in every shot, phone quality is fine. Mix: straight on, both three-quarters, one laughing, one serious, hard sun, indoor lamp, one with hair different, one full body. No profiles, no sunglasses, no group shots, no tiny faces.',
+  hf:'Your best straight-on photo becomes the plate and the Element. All photos train the Soul (10 minutes). Photos are previewed here only; the pack tells you where to send them.',
+  fields:[{k:'photos',l:'Add photos',files:1}],photos:1},
+ {id:'voice',title:'Voice',desc:'Record 60 to 120 seconds on your phone in the room you will post from: read a paragraph at your normal pace, then say three sentences the way you would to a friend. That is enough to clone. Or skip cloning and record each script yourself for 0 credits.',
+  hf:'Step 6. Clone from the memo, or use your own recordings as the audio reference for every clip.',
+  fields:[{k:'voicemode',l:'Voice route',chips:['clone my voice from a memo','I will record each script myself']},{k:'memo',l:'Voice memo',files:1,accept:'audio/*'}]},
+ {id:'room',title:'Your room and look',desc:'The set you will "film" in and the two outfits that repeat. The twin needs a lock just like an invented character.',
+  hf:'Step 7, the start frame prompt from the Soul of you.',
+  fields:[{k:'setting',l:'Setting',ta:1,ph:'my desk by the window, monitor off, a plant, the bookshelf behind me'},{k:'light',l:'Light',chips:['window daylight from the right','window daylight from the left','warm evening lamp','overcast outdoors']},{k:'wardA',l:'Outfit A',ph:'black crewneck tee'},{k:'wardB',l:'Outfit B',ph:'grey quarter-zip'},{k:'mark',l:'Your signature details (glasses, beard, watch, tattoo)',ph:''}]},
+ {id:'content',title:'Persona and content',desc:'How you talk and what you cover. Same rules as the invented character: number-first hooks, no pitch, "follow" or nothing.',
+  hf:'Step 8. First script from pillar one, measured for pace before render.',
+  fields:[{k:'persona',l:'How you come across (one sentence)',ta:1,ph:'direct, calm, explains the mechanism once and moves on'},{k:'pillars',l:'Content pillars',ta:1,ph:''},{k:'first',l:'First post idea',ph:''},{k:'consent',l:'Consent and label',chips:['I am the person in the photos and I consent','I have written permission from the person']}]},
+ {id:'review',title:'Review and build',desc:'Check the card, then build or save. Your first reel is about 30 credits: training plus one clip.',hf:'Steps 4, 7, 8, 9 from this pack.',fields:[],review:true}
+];
+/* ---------- autofill banks ---------- */
+const BANK={
+ default:{names:['Lena Okafor','Mara Vance','Isla Brennan','Sofia Reyes','June Halvorsen','Tessa Kowalczyk'],handles:['@nof1.{f}','@{f}reads','@{f}.{l}'],age:[34,36,38,41],height:['5 ft 7 in','5 ft 8 in','5 ft 6 in'],weight:['140 lbs','148 lbs','135 lbs'],build:'athletic',
+  skin:['light olive-tan, matte, visible pores, first fine lines at the outer eyes','warm medium tan, matte, faint sun lines, visible pores','pale with light freckles across the nose, matte, fine lines at the eyes'],
+  faceshape:['long oval, high cheekbones, straight strong jaw','oval, mature bone structure, defined jaw, longer facial thirds'],nose:['straight with a slight dorsal bump, medium bridge','straight, medium-wide bridge, rounded tip'],lips:['medium-full, muted rose, matte; left corner lifts first','full, natural tint, matte; small asymmetry when she smiles'],eyes:['dark brown, slightly hooded, direct gaze; strong straight dark brows','hazel-brown, muted catchlights, level gaze; full natural brows with a sparse tail'],
+  mark:['a thin pale 1-inch surgical scar on the left collarbone and a small flat mole on the left jawline','a faint scar through the tail of the right brow and a chipped corner on the left front tooth','a cluster of three freckles under the right eye and a healed piercing mark on the left ear'],
+  hair:['dark espresso-brown, shoulder length, low sleek ponytail, centre part, a few silver strands','close-cropped natural coils, tapered nape, crisp hairline','dark blonde, shoulder length, tucked behind both ears'],
+  jewelry:'small plain silver studs; slim steel watch on the left wrist; no rings, no necklace',
+  wardA:'black tailored cotton button-down, top button open, sleeves rolled twice, high-waist charcoal trousers',wardB:'black ribbed tank, heather-grey joggers, thin black headband',palette:'chalk white · graphite · warm oak · black iron · one safety-orange accent',
+  setting:'podcast studio, seated at a dark wood desk, a broadcast dynamic microphone on a boom arm angled in from camera left, over-ear headphones around her neck, two acoustic panels and a warm practical lamp behind her, a water glass and her marked-up papers on the desk, single fixed camera at a medium shot, no interviewer in frame',light:'soft key light from camera right',
+  persona:'a calm, fit, former bench scientist who runs every claim through the actual paper and her own bloodwork, and says "that\'s not what the study showed" with a half-smile',archetype:'the skeptic who tests',flaw:'interrupts herself to correct a number; forgets the coffee; over-annotates everything with orange tabs',voice:'dry, warm, lower-mid, unhurried',catch:'Pull the paper.',
+  pillars:'1 N of 1 self-experiments (process and what she tracked, never amounts) · 2 BS Check: what influencers say vs what the paper shows · 3 one study per video (year, model, n, result) · 4 how to read a certificate of analysis · 5 women\'s physiology: muscle, skin, sleep, perimenopause',series:'N of 1 · BS Check · Paper of the Week · Read the COA',
+  forbid:'no lab coat, no vials or test tubes, no stethoscope, no "Dr." or degree claim, no beauty filter, no ring-light catchlights, no gym-mirror selfie, no before/after, no exclamation marks, no "game-changer", no doses, no vendor names, no discount codes',
+  first:'Collagen powder and copper peptides are not the same molecule.'},
+ fitness:{persona:'a strength coach who programs for people with jobs and kids, counts what you can actually recover from, and laughs at influencer splits',archetype:'the coach who simplifies',setting:'a garage gym, plywood wall, one rack, chalk bucket, a whiteboard with the week\'s numbers, morning light through the open door',wardA:'faded black tee, grey shorts, white socks',wardB:'navy crewneck, black joggers',pillars:'1 what a week actually looks like · 2 the one lift that fixes the thing · 3 recovery you can measure · 4 myths from the feed · 5 training after 35',series:'Week Of · One Lift · Recovery Math · Feed Check',first:'You do not need six days. You need two lifts you can repeat.',catch:'Repeat it.'},
+ finance:{persona:'a former analyst who reads the filing, not the headline, and shows you the one line that changes the story',archetype:'the insider who follows the money',setting:'a small home office, two monitors off, a printed 10-K with yellow tabs, a mechanical pencil, a window to the left',wardA:'navy knit polo, sleeves pushed up',wardB:'white oxford, collar open',pillars:'1 the one line in the filing · 2 what the headline left out · 3 how the money actually moves · 4 a term explained in 15 seconds · 5 what I would ask the CEO',series:'One Line · Left Out · Follow the Money · Term Sheet',first:'The press release said record revenue. Page 41 says why it will not repeat.',catch:'Read page 41.'},
+ skincare:{persona:'a cosmetic chemist who formulates for a living and reads the ingredient list before the marketing',archetype:'the researcher who reads the paper',setting:'a bright kitchen counter used as a bench, a scale, labelled jars, a notebook, window light from the right',wardA:'cream linen shirt, sleeves rolled',wardB:'black ribbed tank',pillars:'1 ingredient lists decoded · 2 what the study actually tested · 3 texture and pH, shown · 4 what I use and why · 5 skin after 35',series:'List Check · In Vitro · On the Bench · Routine',first:'Percent on the label is not percent that reaches the skin.',catch:'Flip it over.'}
+};
+function pick(arr,seed){if(!Array.isArray(arr))return arr;return arr[seed%arr.length]}
+function hash(s){let h=7;for(const c of (s||'')){h=(h*31+c.charCodeAt(0))>>>0}return h}
+function autofill(track){const st=S[track];const seed=hash(st.brief||st.niche||'');const b=((st.brief||'')+' '+(st.niche||'')).toLowerCase();
+ let lane='default';if(/lift|gym|strength|fitness|workout|coach/.test(b))lane='fitness';else if(/stock|invest|financ|money|market|analyst|cfo/.test(b))lane='finance';else if(/skin|serum|cosmetic|retinol/.test(b))lane='skincare';
+ const base=Object.assign({},BANK.default,BANK[lane]||{});
+ const male=/\b(man|male|guy|he\b|him\b|father|dad)\b/.test(b)&&!/\bwoman|female|she\b|her\b/.test(b);
+ const fill=(k,v)=>{if(!st[k])st[k]=v};
+ if(track==='char'){
+  const nm=male?pick(['Daniel Reyes','Marcus Lindqvist','Theo Okonkwo','Adam Castellanos'],seed):pick(base.names,seed);fill('name',nm);
+  const f=nm.split(' ')[0].toLowerCase(),l=nm.split(' ')[1].toLowerCase();fill('handle',pick(base.handles,seed).replace('{f}',f).replace('{l}',l));
+  const agem=b.match(/\b(2[0-9]|3[0-9]|4[0-9]|5[0-9])\b/);fill('age',agem?agem[1]:String(pick(base.age,seed)));fill('gender',male?'Male':'Female');fill('height',male?'6 ft 0 in':pick(base.height,seed));fill('weight',male?'178 lbs':pick(base.weight,seed));fill('build',base.build);
+  fill('skin',pick(base.skin,seed));fill('faceshape',pick(base.faceshape,seed));fill('nose',pick(base.nose,seed));fill('lips',pick(base.lips,seed));fill('eyes',pick(base.eyes,seed));fill('mark',pick(base.mark,seed));
+  fill('hair',male?'dark brown, short textured crop, grey at the temples':pick(base.hair,seed));fill('jewelry',male?'a scuffed steel field watch on the left wrist; no rings':base.jewelry);fill('wardA',base.wardA);fill('wardB',base.wardB);fill('palette',base.palette);
+ }
+ fill('setting',base.setting);fill('light',base.light);fill('persona',base.persona);fill('archetype',base.archetype);fill('flaw',base.flaw);fill('voice',male?'low, measured, authoritative':base.voice);fill('catch',base.catch);fill('pillars',base.pillars);fill('series',base.series);fill('forbid',base.forbid);fill('first',base.first);
+ if(!st.platform)st.platform='Instagram Reels';if(!st.niche)st.niche=lane==='default'?'research peptides, women':lane;
+ if(isExample(track))S.loaded=null;
+ save();render(track);toast('Filled from your brief. Edit anything.')}
+/* ---------- rendering ---------- */
+function render(track){const defs=track==='char'?CHAR:TWIN;const st=S[track];const i=Math.min(S.cur[track]||0,defs.length-1);
+ const nav=document.getElementById('nav-'+track);nav.innerHTML=defs.map((d,j)=>`<button class="${j===i?'on':''} ${stepDone(track,j)?'done':''}" onclick="S.cur.${track}=${j};save();render('${track}')">${j+1} · ${d.title}</button>`).join('');
+ const d=defs[i];let h=`<div class="step card"><div class="k">Step ${i+1} of ${defs.length}</div><h3 style="font-size:20px;margin:4px 0 6px">${d.title}</h3><p class="mute">${d.desc}</p>${HF(d.hf)}`;
+ if(d.photos){h+=`<div class="field"><label>Add photos</label><div class="hint">Previewed here only. Count and checklist go into the pack.</div><input type="file" accept="image/*" multiple onchange="addPhotos(event)"><div class="photos" id="photos">${(st.photoNames||[]).map((n,k)=>`<div title="${esc(n)}">${st.photoThumbs&&st.photoThumbs[k]?`<img src="${st.photoThumbs[k]}" alt="">`:esc(n)}</div>`).join('')||'<div>no photos yet</div>'}</div><p class="mute" style="font-size:13px;margin-top:6px">${(st.photoNames||[]).length} of 10 to 15</p></div>`}
+ for(const f of d.fields){if(f.files&&!d.photos){h+=`<div class="field"><label>${f.l}</label><input type="file" accept="${f.accept||'*/*'}" onchange="S.${track}.${f.k}=event.target.files[0]?event.target.files[0].name:'';save();render('${track}')"><div class="hint">${st[f.k]?'Attached: '+esc(st[f.k]):'optional here; the pack lists it'}</div></div>`;continue}
+  if(f.files)continue;
+  h+=`<div class="field"><label>${f.l}</label>${f.ta?`<textarea data-k="${f.k}" placeholder="${esc(f.ph||'')}">${esc(st[f.k]||'')}</textarea>`:`<input type="text" data-k="${f.k}" placeholder="${esc(f.ph||'')}" value="${esc(st[f.k]||'')}">`}${f.chips?`<div class="chips">${f.chips.map(c=>`<button class="chip" onclick="setv('${track}','${f.k}',this.textContent)">${esc(c)}</button>`).join('')}</div>`:''}</div>`}
+ if(d.review){h+=reviewHTML(track)}
+ h+=`<div class="row">${i>0?`<button class="btn g" onclick="S.cur.${track}=${i-1};save();render('${track}')">← Back</button>`:''}${i===0?`<button class="btn" onclick="autofill('${track}')">✦ Autofill the rest from my brief</button>`:''}${i<defs.length-1?`<button class="btn p" onclick="S.cur.${track}=${i+1};save();render('${track}')">Next →</button>`:`<button class="btn p" onclick="build('${track}')">Build my reel →</button><button class="btn" onclick="S.lastTrack='${track}';saveChar(false)">Save to library</button><button class="btn g" onclick="S.lastTrack='${track}';saveChar(true)">Save &amp; create new</button>`}</div></div>`;
+ const box=document.getElementById('steps-'+track);box.innerHTML=h;
+ box.querySelectorAll('[data-k]').forEach(el=>el.addEventListener('input',e=>{st[el.dataset.k]=el.value;if(isExample(track)){S.loaded=null}save();card(track)}));
+ card(track)}
+function setv(track,k,v){S[track][k]=v;if(isExample(track))S.loaded=null;save();render(track)}
+function stepDone(track,j){const defs=track==='char'?CHAR:TWIN;const st=S[track];const d=defs[j];if(d.review)return false;if(d.photos)return (st.photoNames||[]).length>=10;const keys=d.fields.filter(f=>!f.files).map(f=>f.k);return keys.length>0&&keys.filter(k=>st[k]).length>=Math.ceil(keys.length*0.6)}
+function addPhotos(ev){const files=[...ev.target.files].slice(0,15);const st=S.twin;st.photoNames=files.map(f=>f.name);st.photoThumbs=[];let n=0;files.forEach((f,k)=>{const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const s=120/Math.max(img.width,img.height);c.width=img.width*s;c.height=img.height*s;c.getContext('2d').drawImage(img,0,0,c.width,c.height);st.photoThumbs[k]=c.toDataURL('image/jpeg',.6);if(++n===files.length){save();render('twin')}};img.src=r.result};r.readAsDataURL(f)})}
+/* ---------- avatar card ---------- */
+const SKIN={'olive':'#c9a07a','brown':'#7a4b2c','pale':'#e9cfbf','tan':'#b7805a'};const HAIR={'espresso':'#2b1a12','black':'#141414','blonde':'#b8955a','grey':'#8a8a8a','red':'#8a3a1a'};
+function tone(st){const s=(st.skin||'').toLowerCase();if(/deep|dark|brown|black/.test(s))return SKIN.brown;if(/pale|fair|freckle/.test(s))return SKIN.pale;if(/olive/.test(s))return SKIN.olive;if(/tan|medium/.test(s))return SKIN.tan;return '#c9a07a'}
+function hcol(st){const h=(st.hair||'').toLowerCase();if(/blonde/.test(h))return HAIR.blonde;if(/grey|silver|white/.test(h)&&!/strand/.test(h))return HAIR.grey;if(/red|auburn/.test(h))return HAIR.red;if(/black|coil/.test(h))return HAIR.black;return HAIR.espresso}
+function figure(view,st){const sk=tone(st),hc=hcol(st);const b=(st.build||'').toLowerCase();const w=/athletic|strong/.test(b)?1.12:/lean/.test(b)?.92:1;const male=(st.gender||'').toLowerCase()==='male';const sw=(male?30:26)*w;
+ const long=/shoulder|long|ponytail|waves/.test((st.hair||'').toLowerCase());const pony=/ponytail/.test((st.hair||'').toLowerCase());
+ const head=view==='side'?`<ellipse cx="40" cy="24" rx="9" ry="11" fill="${sk}"/><path d="M31 18 q4 -12 16 -8 q6 4 2 14 z" fill="${hc}"/>${pony?`<path d="M31 24 q-6 8 -2 20" stroke="${hc}" stroke-width="4" fill="none" stroke-linecap="round"/>`:''}`:
+  view==='back'?`<ellipse cx="40" cy="24" rx="10" ry="11" fill="${hc}"/>${pony?`<path d="M40 30 q0 10 -1 18" stroke="${hc}" stroke-width="5" fill="none" stroke-linecap="round"/>`:''}`:
+  `<ellipse cx="40" cy="24" rx="10" ry="11" fill="${sk}"/><path d="M29 20 q2 -12 11 -12 q9 0 11 12 q-4 -6 -11 -6 q-7 0 -11 6 z" fill="${hc}"/>${long&&!pony?`<path d="M29 22 q-2 10 0 16 M51 22 q2 10 0 16" stroke="${hc}" stroke-width="5" fill="none" stroke-linecap="round"/>`:''}<circle cx="36" cy="25" r="1.3" fill="#111"/><circle cx="44" cy="25" r="1.3" fill="#111"/><path d="M37 30 q3 2 6 0" stroke="#7a3a3a" stroke-width="1.2" fill="none"/>`;
+ const q=view==='threeq';const shirt='#1f232b';
+ return `<svg viewBox="0 0 80 150" role="img" aria-label="${view} view"><defs><linearGradient id="g${view}" x1="0" x2="1"><stop offset="0" stop-color="${shirt}"/><stop offset="1" stop-color="#2c3340"/></linearGradient></defs>
+ ${head}<rect x="37" y="33" width="6" height="7" fill="${sk}"/>
+ <path d="M${40-sw/2} 40 q${q?6:0} 0 ${sw} 0 l5 48 h-${sw+10} z" fill="url(#g${view})"/>
+ <path d="M${40-sw/2-6} 42 l-5 34 l8 2 l6 -30 z M${40+sw/2+6} 42 l5 34 l-8 2 l-6 -30 z" fill="${sk}"/>
+ <path d="M${40-sw/2+2} 88 h${sw-4} l3 54 h-10 l-6 -40 l-6 40 h-10 z" fill="#3a3f49"/>
+ <rect x="${40-sw/2+1}" y="140" width="10" height="5" fill="#eee"/><rect x="${40+sw/2-11}" y="140" width="10" height="5" fill="#eee"/></svg>`}
+const EXPR=['neutral','half-smile','laugh','serious','surprised','listening','mid-sentence','skeptical'];
+function face(e,st){const sk=tone(st);const m={neutral:'M30 42 h20',"half-smile":'M30 42 q10 6 20 0',laugh:'M28 40 q12 14 24 0 z',serious:'M30 44 q10 -4 20 0',surprised:'M36 40 a4 5 0 1 0 8 0 a4 5 0 1 0 -8 0',listening:'M31 43 q9 3 18 0',"mid-sentence":'M31 41 a9 4 0 1 0 18 0 z',skeptical:'M30 43 q10 -2 20 2'}[e];
+ const brow=e==='skeptical'?'M28 24 l10 -3 M42 22 l10 3':e==='surprised'?'M28 21 q5 -5 10 0 M42 21 q5 -5 10 0':e==='serious'?'M28 25 l10 1 M42 26 l10 -1':'M28 23 l10 0 M42 23 l10 0';
+ return `<svg viewBox="0 0 80 60"><ellipse cx="40" cy="32" rx="18" ry="22" fill="${sk}"/><path d="${brow}" stroke="#222" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="33" cy="30" r="1.8" fill="#111"/><circle cx="47" cy="30" r="1.8" fill="#111"/><path d="${m}" stroke="#7a3a3a" stroke-width="1.6" fill="${/laugh|mid/.test(e)?'#3a1a1a':'none'}"/></svg>`}
+function card(track){const st=S[track];const el=document.getElementById('card-'+track);const name=st.name||(track==='twin'?'You':'Unnamed');const pct=Math.round(100*fillPct(track));
+ const p=loadedProfile();const ex=isExample(track);const sheet=p&&(p.track||'char')===track&&p.outputs&&p.outputs.sheet;
+ const imagery=sheet?`<img class="sheetimg" src="${esc(sheet.page1)}" alt="Continuity sheet page one"><img class="sheetimg" src="${esc(sheet.page2)}" alt="Continuity sheet page two" style="margin-top:0">`:
+  `<div class="turn"><figure>${figure('front',st)}<figcaption>FRONT</figcaption></figure><figure>${figure('threeq',st)}<figcaption>¾</figcaption></figure><figure>${figure('side',st)}<figcaption>SIDE</figcaption></figure><figure>${figure('back',st)}<figcaption>BACK</figcaption></figure></div>`;
+ el.innerHTML=`<div class="cardx">${ex?'<span class="extag">Example</span>':''}<div class="k">${track==='twin'?'Digital twin · continuity card':'Continuity card · live'}</div><div class="nm">${esc(name)}</div><div class="ln">${p&&(p.track||'char')===track&&p.variant?esc(p.variant)+' — ':''}${esc(st.persona||st.brief||'')}</div>
+ ${imagery}
+ <div class="stats">${[['age',st.age],['height',st.height],['weight',st.weight],['build',st.build],['eyes',(st.eyes||'').split(',')[0]],['hair',(st.hair||'').split(',')[0]],['skin',(st.skin||'').split(',')[0]],['mark',(st.mark||'').split(';')[0].split(',')[0]],['voice',(st.voice||'').split(',')[0]],['platform',st.platform]].map(([k,v])=>`<div class="stat"><b>${k}</b><span>${esc(v||'—')}</span></div>`).join('')}</div>
+ ${sheet?'':`<div class="expr">${EXPR.map(e=>`<div>${face(e,st)}${e}</div>`).join('')}</div>`}
+ ${st.forbid||st.mark?`<div class="lock"><b>DO NOT CHANGE</b><br>${esc([st.mark,st.hair&&'hair: '+st.hair.split(',')[0],st.jewelry&&st.jewelry.split(';')[0]].filter(Boolean).join(' · '))}${st.forbid?'<br>'+esc(st.forbid.slice(0,140)):''}</div>`:''}
+ <div class="bar"><i style="width:${pct}%"></i></div><div class="mute" style="font-size:12px;margin-top:4px;font-family:var(--mono)">${pct}% of the sheet filled</div></div>`}
+function fillPct(track){const defs=track==='char'?CHAR:TWIN;const st=S[track];let n=0,t=0;defs.forEach(d=>d.fields.forEach(f=>{if(f.files)return;t++;if(st[f.k])n++}));if(track==='twin'){t++;if((st.photoNames||[]).length>=10)n++}return t?n/t:0}
+function reviewHTML(track){const st=S[track];const miss=[];const defs=track==='char'?CHAR:TWIN;defs.forEach(d=>d.fields.forEach(f=>{if(!f.files&&!st[f.k])miss.push(f.l)}));
+ const p=loadedProfile();const same=p&&(p.track||'char')===track;const o=same?p.outputs:null;const ck=same?p.checks:null;
+ let out='';
+ if(ck&&Object.keys(ck).length){const Q=['What is she for in the business?','What does she want on camera?','What does she never do?','The flaw that makes her human?','Silhouette with no face?','Contradiction?','Where does she live on camera?','How does she talk?','Persona sentence'];out+=`<div class="field"><label>The 9-question check</label><div class="out">${Q.map((q,i)=>`<div class="stat"><b>${i+1} · ${esc(q)}</b><span>${esc(ck['q'+(i+1)]||'—')}</span></div>`).join('')}</div></div>`}
+ if(same&&p.performance&&Object.keys(p.performance).length){out+=`<div class="field"><label>Performance profile</label><div class="out">${Object.entries(p.performance).map(([k,v])=>`<div class="stat"><b>${esc(k)}</b><span>${esc(v)}</span></div>`).join('')}</div></div>`}
+ if(o&&Object.keys(o).length){out+=`<div class="field"><label>Phase outputs</label><div class="out">
+  ${o.plate?`<div class="stat"><b>1 · plate</b><span>${esc(o.plate.picked)}. ${esc(o.plate.candidates||'')}</span></div>`:''}
+  ${o.element?`<div class="stat"><b>2 · element</b><span>${esc(o.element)}</span></div>`:''}
+  ${o.trainingSet?`<div class="stat"><b>3 · training set</b><span>${esc(o.trainingSet)}</span></div>`:''}
+  ${o.soul?`<div class="stat"><b>4 · soul</b><span>${esc(o.soul.id)} · ${esc(o.soul.status)} · ${esc(o.soul.trainedOn||'')}</span></div>`:''}
+  ${o.sheet?`<div class="stat"><b>5 · continuity sheet</b><span>${esc(o.sheet.renders||'rendered')} (shown on the card)</span></div>`:''}
+  ${o.voice?`<div class="stat"><b>6 · voice</b><span>${esc(o.voice.engine)} · id ${esc(o.voice.id)} · ${esc(o.voice.f0||'')}</span></div>`:''}
+  ${o.reel?`<div class="stat"><b>8 · 9 · reel + gate</b><span>${esc(o.reel.name)} · ${esc(o.reel.duration)} · gate ${o.reel.score?o.reel.score.overall+'/100 '+(o.reel.score.pass?'PASS':'FAIL'):'pending'} · see "Your reel"</span></div>`:''}
+  ${o.credits?`<div class="stat"><b>credits</b><span>${esc(o.credits)}</span></div>`:''}
+  ${o.pending?`<div class="stat"><b>next</b><span>${esc(o.pending)}</span></div>`:''}
+ </div></div>`}
+ return out+`<div class="field"><label>Readiness</label>${miss.length?`<div class="hint">Still empty: ${miss.slice(0,8).join(', ')}${miss.length>8?'…':''}. Autofill on step 1 writes them, or build anyway.</div>`:'<div class="hint">Every field has a value. The pack will be complete.</div>'}</div>
+ <div class="field"><label>Credit quote</label><div class="hint">${track==='char'?'Plate 5 · set 24 · Soul ≈ 26 · sheet 5.5 · frame 0.12 · first clips 27.5 each (or 45 to 180 native speech) · captions 0 → <b>about 90 to 240 credits</b> to a gated first reel.':'Soul ≈ 26 · sheet 2.75 · frame 0.12 · first clips 27.5 each → <b>about 60 to 210 credits</b>. Your own recordings keep voice at 0.'}</div></div>`}
+/* ---------- build pack ---------- */
+function scriptFor(st){const first=(st.first||'').trim();const catch_=st.catch||'';const hook=first||'A 2023 study. Forty people. Here is the part nobody quotes.';
+ return `${hook} ${/molecule|not the same/.test(hook)?'One is a protein chopped into fragments. The other is three amino acids holding a copper ion. Different molecule, different studies.':'Here is what the paper actually showed, and what they left out.'} ${catch_}`.trim()}
+function pack(track){const st=S[track];const twin=track==='twin';const g=k=>st[k]||'—';const words=scriptFor(st);const wc=words.split(/\s+/).length;
+ const sheet=twin?`=== DIGITAL TWIN SHEET ===
+[NAME]: ${g('name')}   [PLATFORM]: ${g('platform')}
+[PHOTOS]: ${(st.photoNames||[]).length} supplied (${(st.photoNames||[]).join(', ')||'none yet'}) — need 10–15, face visible, no profiles, no sunglasses
+[VOICE ROUTE]: ${g('voicemode')}   [MEMO]: ${g('memo')}
+[SETTING]: ${g('setting')}   [LIGHT]: ${g('light')}
+[WARDROBE A]: ${g('wardA')}   [WARDROBE B]: ${g('wardB')}   [SIGNATURE DETAILS]: ${g('mark')}
+[PERSONA]: ${g('persona')}
+[PILLARS]: ${g('pillars')}
+[CONSENT]: ${g('consent')}   [AI LABEL]: on, every post`:
+`=== CHARACTER DESIGN SHEET ===
+[NAME]: ${g('name')}  (${g('handle')})   [PLATFORM]: ${g('platform')}   [NICHE]: ${g('niche')}
+[AGE]: ${g('age')}  [HEIGHT]: ${g('height')}  [WEIGHT]: ${g('weight')}  [GENDER]: ${g('gender')}  [BUILD]: ${g('build')}
+[SKIN]: ${g('skin')}
+[FACE]: ${g('faceshape')}   [NOSE]: ${g('nose')}   [LIPS]: ${g('lips')}   [EYES/BROWS]: ${g('eyes')}
+[MARK]: ${g('mark')}
+[HAIR]: ${g('hair')}   [JEWELRY]: ${g('jewelry')}
+[WARDROBE A]: ${g('wardA')}   [WARDROBE B]: ${g('wardB')}   [PALETTE]: ${g('palette')}
+[SETTING]: ${g('setting')}   [LIGHT]: ${g('light')}
+[PERSONA SENTENCE]: ${g('persona')}   [ARCHETYPE]: ${g('archetype')}   [FLAW]: ${g('flaw')}
+[VOICE]: ${g('voice')}   [CATCHPHRASE]: ${g('catch')}
+[CONTENT PILLARS]: ${g('pillars')}   [SERIES]: ${g('series')}
+[FORBIDDEN]: ${g('forbid')}`;
+ const plate=twin?'(no plate render: best straight-on photo = plate and Element)':`Close-up head-and-shoulders identity portrait, single subject, exactly one person, facing camera straight on, neutral expression with a faint closed-mouth smile that sits slightly higher on the left side, plain flat uniform mid-grey background with no surface, no floor, no shadow and no vignette. Original character: a ${(st.gender||'woman').toLowerCase()==='male'?'man':'woman'} aged ${g('age')}, ${g('skin')}, mature adult bone structure with a defined jawline and longer facial thirds, ${g('faceshape')}, ${g('nose')}, ${g('lips')}, ${g('eyes')} with naturally muted catchlights and no oversized specular glare, ${g('mark')}, ${g('hair')}, ${g('jewelry')}, visible fine skin texture with natural pores, fine lines at the outer corners of the eyes, subtle asymmetries, light tinted moisturizer with slightly uneven blending rather than flawless coverage, slight natural sheen rather than glossy retouched finish, matte-to-natural complexion, no digital smoothing, no beauty filter, no AI-airbrushed look, wearing ${g('wardA')}. Even flat frontal illumination with no key direction, no cast shadow, no bokeh, no flare. Photographed on a 50mm prime, even sharpness. Photographed not generated. no text, no watermark, no props, no other people, no babyface, no plastic skin, no glossy skin.`;
+ const frame=`Vertical phone-video frame, paused mid-conversation: ${twin?'the person':'the same person as the reference'} in ${g('setting')}, facing the camera, centered, medium shot, head and upper chest in frame with a little headroom, eyes to camera, mouth closed, composed expression, both hands visible. ${g('light')}, no ring light, single fixed camera, no one else in frame. Wearing ${g('wardA')}. Real skin pores and fine lines, matte complexion, naturally muted catchlights, no retouching, no beauty filter, slight phone-camera noise, natural muted colors. Single subject, no readable text, no watermark.`;
+ const video=`She speaks the measured voice track to camera with natural lip sync, brows at rest between phrases, one glance down at the papers, one small open-palm gesture on the key phrase, a slight chin-down nod on the last line, slow irregular blinks, small weight shifts, hands visible, no camera move, no zoom. Script: "${words}". Target pace 193 to 203 words per minute, no pause longer than 0.6 s, room tone at −43 dBFS.`;
+ return `AI CHARACTER STUDIO — BUILD PACK (${twin?'Track B · digital twin':'Track A · AI character'}) — ${new Date().toISOString().slice(0,16).replace('T',' ')}
+
+${sheet}
+
+=== HIGGSFIELD RUN ORDER ===
+${twin?'1. Upload the 10–15 photos as photos (media_upload). Best straight-on = plate; create a Reference Element from it.\n2. Train Soul 2.0 on all face-visible photos (10 min).\n3. Continuity sheet: hybrid — generated body panels, real face in the face panel (gpt_image_2_5, 2.75 cr).\n4. Voice: clone from the memo (ElevenLabs) or use own recordings as audio reference (0 cr).':
+'1. Plate ×4 (soul_2 ×2, gpt_image_2_5, nano_banana_2_1; 3:4 2k) with PLATE PROMPT below; pick one; never re-run it.\n2. Reference Element from the plate (0 cr).\n3. Training set: 12-angle matrix with the plate as image reference (nano_banana_2_1, 3:4 2k, 24 cr); contact-sheet QA.\n4. Train Soul 2.0 on the face-visible shots only (no profiles, no full body), uploaded as photos (≈26 cr, 10 min).\n5. Continuity sheet v2 (gpt_image_2_5 ×2, 5.5 cr): profile, turnaround, face macros, 8 expressions, 6 poses, costume macros, palette, DO-NOT-CHANGE box, performance profile.\n6. Voice: ElevenLabs voice design in the register above; 3 previews; lock one. Measure every line: 193–203 WPM, median pause ≈0.38 s, zero pauses ≥0.7 s.'}
+7. Start frame from the Soul with FRAME PROMPT (soul_2 + soul_id, 9:16 2k, 0.12 cr).
+8. Clips: wan2_7 9:16 1080p, start_image = frame, audio_references = the measured line (27.5 cr per ≤14.8 s clip), VIDEO PROMPT below; or seedance_2_5 omni_reference native speech (45 draft / 180 1080p).
+9. Gate: humanness_score.py --archetype ${/skeptic|research|insider/.test(st.archetype||'')?'clinical':'practitioner'} → overall ≥70, every dimension ≥55 (≤3 fix rounds). Then reel-build.py captions. Then post with the AI label. CTA = follow or nothing.
+
+=== PLATE PROMPT ===
+${plate}
+
+=== FRAME PROMPT ===
+${frame}
+
+=== SCRIPT (reel 001, ${wc} words${wc>30?' — TOO LONG, cut to ≤28 or split into two clips':''}) ===
+${words}
+
+=== VIDEO PROMPT ===
+${video}
+
+=== GATE TARGETS (from 322 real reels) ===
+pace 193–203 WPM · median pause 0.36–0.43 s · long pauses 0/min · brows ~0.09–0.18 · glances ~39/min · head yaw ~6–8° · noise floor −42 dBFS · speech −23 dBFS · talking head ≥97% · face 21–24% of frame height · hands in frame 80% · ≤1.6 evidence words per 100
+
+=== RULES ===
+AI-generated label on every post · never a dose, price, vendor, code or before/after · compound may be named in the caption · hook mid-thought with a number · no greeting · end on the correction · never publish the plate or training set`}
+function build(track){const p=pack(track);S.lastPack=p;S.lastTrack=track;save();document.getElementById('packwrap').innerHTML=`<div class="k">Build pack · ${track==='twin'?'digital twin':'AI character'}</div><p class="mute" style="font-size:13px">Copy this to the studio. It runs in order and returns the reel plus its score card. Nothing is sent automatically from this page.</p><pre id="packpre">${esc(p)}</pre>`;const b=document.getElementById('packbtns');b.hidden=false;try{document.getElementById('dl').href='data:text/plain;charset=utf-8,'+encodeURIComponent(p)}catch(e){}reelCard();go('reel')}
+function copyPack(){const p=S.lastPack||'';if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(p).then(()=>toast('Build pack copied')).catch(()=>sel())}else sel();function sel(){const pre=document.getElementById('packpre');if(!pre)return;const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);toast('Selected — press copy')}}
+/* ---------- reel card ---------- */
+function reelCard(){const el=document.getElementById('reelcard');const p=loadedProfile();const o=p&&p.outputs&&p.outputs.reel?p.outputs.reel:null;
+ if(p&&!o&&p.outputs&&p.outputs.pending){el.innerHTML=`${p.bundled?'<span class="extag">Example</span>':''}<div class="k">${esc(p.name)} · ${esc(p.variant||'')}</div><span class="badge">reel pending</span><p class="mute" style="font-size:13px">${esc(p.outputs.pending)}</p>`;return}
+ if(!o){const ex=BUNDLED[0];const r=ex&&ex.outputs&&ex.outputs.reel;el.innerHTML=`<span class="extag">Example</span><div class="k">Finished example · ${esc(ex?ex.name:'')}</div><p class="mute" style="font-size:13px">${esc(r?r.name:'')} · ${esc(r?r.duration:'')}</p>${r?`<video controls playsinline preload="metadata"><source src="${esc(r.file)}" type="video/mp4"></video>`:''}${r&&r.score?score(r):''}<p class="mute" style="font-size:12.5px;margin-top:8px">Your own reel appears here with its score card once the studio has run your pack.</p>`;return}
+ el.innerHTML=`${p.bundled?'<span class="extag">Example</span>':''}<div class="k">${esc(p.name)} · ${esc(o.name)}</div><p class="mute" style="font-size:13px">${esc(o.duration||'')}${o.route?' · '+esc(o.route):''}</p><video controls playsinline preload="metadata"><source src="${esc(o.file)}" type="video/mp4"></video>${score(o)}${o.script?`<div class="field"><label>Script as rendered</label><div class="hint">${esc(o.script)}</div></div>`:''}${o.openFixes?`<p class="mute" style="font-size:12.5px">Open fixes for the next round: ${esc(o.openFixes)}.</p>`:''}${(p.outputs.history||[]).length?`<div class="field"><label>Earlier reels</label>${p.outputs.history.map(h=>`<div class="hint">${esc(h.name)} · ${esc(h.duration||'')} · gate ${h.score?h.score.overall+'/100':'—'}${h.file?` · <a href="${esc(h.file)}" style="color:var(--acc)">watch</a>`:''}${h.note?' · '+esc(h.note):''}</div>`).join('')}</div>`:''}`}
+function score(o){if(!o.score)return '';const s=o.score;return `<div style="margin-top:10px"><span class="badge ${s.pass?'ok':'no'}">${s.pass?'PASSED':'FAILED'} the gate · ${s.overall}/100</span><div class="stats">${Object.entries(s.dims||{}).map(([k,v])=>`<div class="stat"><b>${esc(k)}</b><span>${v}</span></div>`).join('')}</div>${o.measured?`<p class="mute" style="font-size:12.5px;margin-top:8px">Measured: ${esc(o.measured)}. The gate is a floor, not the finish line; a human listens before anything posts.</p>`:''}</div>`}
+/* ---------- init: demo mode ---------- */
+if(!S.demoSeen&&BUNDLED.length){S.demoSeen=true;loadChar(BUNDLED[0].id,false);save()}
+render('char');render('twin');renderLib();reelCard();
+const h0=(location.hash||'').replace('#','');if(['start','char','twin','lib','how','data','reel'].includes(h0))go(h0);
+</script>
+</body></html>
